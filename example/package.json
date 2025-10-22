@@ -1,0 +1,21 @@
+{
+  "name": "tiny-spa-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "tiny-spa": "file:../"
+  },
+  "devDependencies": {
+    "vite": "^7.1.3",
+    "glob": "^11.0.3"
+  }
+}

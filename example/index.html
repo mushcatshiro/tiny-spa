@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimal SPA Framework</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    nav {
+      background-color: #333;
+      padding: 1rem;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-right: 1rem;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    #app {
+      padding: 2rem;
+    }
+
+    .chart-container {
+      width: 80%;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a href="#/">Home</a>
+    <a href="#/about">About</a>
+    <a href="#/contact">Contact</a>
+  </nav>
+
+  <div id="app">
+    <!-- Content will be dynamically loaded here -->
+  </div>
+
+  <!-- Main Router -->
+  <script src="main.js" type="module"></script>
+
+</body>
+
+</html>
