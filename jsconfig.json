@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2024",
+    "lib": ["ES2024", "es2015", "dom"],
+    "module": "esnext",
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "d3": ["types/d3"],
+      "tiny-spa/*": ["./src/*"]
+    }
+  },
+  "include": ["**/*.js"]
+}
