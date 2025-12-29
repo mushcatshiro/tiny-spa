@@ -1,26 +1,45 @@
 // spa-framework.js
 
+import { BaseController, DefaultErrorController } from './baseController.js'
+
+/**
+  * @typedef { Object } routeObj
+  * @property { string } templateUrl
+  * @property { typeof BaseController } controller
+  */
+
 /**
  * @class SpaFramework
  * @description A minimal framework for building Single Page Applications.
  */
 class TinySpa{
   constructor() {
+    /**
+      * @type { Object.<string, routeObj> }
+      */
     this.routes = {};
+    /**
+      * @type { BaseController | null }
+      */
     this.currentController = null;
-    // Listen for hash changes to handle routing
     window.addEventListener('hashchange', () => this.handleRouteChange());
-    // Handle initial page load
     window.addEventListener('load', () => this.handleRouteChange());
   }
 
   /**
    * Registers a route.
-   * @param {string} path - The URL path (e.g., '/home').
-   * @param {string} templateUrl - The path to the HTML template file.
-   * @param {Function} controller - The controller function to execute for this route.
+   * @param { string } path - The URL path (e.g., '/home').
+   * @param { string } templateUrl - The path to the HTML template file.
+   * @param { typeof BaseController } controller - The controller function to execute for this route.
    */
   registerRoute(path, templateUrl, controller) {
+    const isValidController = controller && (controller === BaseController || controller.prototype instanceof BaseController);
+    const isValidUrl = typeof templateUrl === 'string' && templateUrl.startsWith('/') && templateUrl.length > 0;
+    if (!isValidController || !isValidUrl) {
+      console.error(`[Router] Validation failed for ${path}. Routing to fallback`)
+      templateUrl = ""
+      controller = DefaultErrorController
+    }
     this.routes[path] = { templateUrl, controller };
   }
 
@@ -28,54 +47,27 @@ class TinySpa{
    * Handles the route change based on the URL hash.
    */
   async handleRouteChange() {
-    console.log("test")
-    if (this.currentController && typeof this.currentController.onUnmount === "function") {
+    if (this.currentController) {
       await this.currentController.onUnmount();
     }
     this.currentController = null
 
     const path = window.location.hash.slice(1) || '/';
-    const route = this.routes[path];
+    const routeObj = this.routes[path];
 
-    if (!route) {
-      if (this.routes["/404"]) {
-        this.renderView(path, route)
-      } else {
-        this.renderView('<h1>404 - Not Found</h1>', "");
-      } 
-    }
     try {
-      this.renderView(path , route);
-
-      // Execute the controller
-      if (typeof route.controller === 'function') {
-        this.currentController = new route.controller();
-        await this.currentController.onMount()
-        // The controller's constructor can handle initial data loading
+      const response = await fetch(routeObj.templateUrl);
+      if (!response.ok) throw new Error(`Failed to fetch template: ${routeObj.templateUrl}`);
+      const html = await response.text();
+      const appContainer = document.getElementById('app');
+      if (appContainer) {
+        appContainer.innerHTML = html;
+        this.loadPageStyles(routeObj.templateUrl);
+      } else {
+        console.error('App container with id "app" not found.');
       }
-    } catch (error) {
-      console.error('Error handling route change:', error);
-      this.renderView('<h1>Error: Page not found</h1>', "");
-    }
-  }
-
-  /**
-   * Renders the HTML content into the main app container.
-   * @param {string} path - url path to be rendered
-   * @param {any} route - path to HTML file
-   */
-  async renderView(path, route) {
-    // Fetch the HTML template
-    const response = await fetch(route.templateUrl);
-    if (!response.ok) throw new Error(`Failed to fetch template: ${route.templateUrl}`);
-    const html = await response.text();
-
-    const appContainer = document.getElementById('app');
-    if (appContainer) {
-      appContainer.innerHTML = html;
-      this.loadPageStyles(route.templateUrl);
-    } else {
-      console.error('App container with id "app" not found.');
+    } catch (err) {
+      this.handleRoutingError(path);
     }
   }
 
@@ -83,9 +75,9 @@ class TinySpa{
    * Removes the currently active page-specific stylesheet.
    */
   unloadPageStyles() {
-    const currentStyle = this.existingPageStyle();
-    if (currentStyle) {
-      document.head.removeChild(currentStyle);
+    const currentstyle = this.existingpagestyle();
+    if (currentstyle) {
+      document.head.removechild(currentstyle);
     }
   }
 
@@ -107,6 +99,25 @@ class TinySpa{
     link.dataset.pageStyle = pageName;
 
     document.head.appendChild(link);
+  }
+
+  /**
+    * @param{ string } errMsg
+    * @param{ number } errorCode
+  */
+  function registerError(errMsg, errorCode=404) {
+    return
+  }
+}
+
+class SpaError extends Error {
+  /**
+    * @param{ string } message
+    * @param{ number } code
+    */
+  constructor(message, code=404) {
+    super(message);
+    this.errorCode = code
   }
 }
 
