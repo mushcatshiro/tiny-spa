@@ -1,6 +1,6 @@
 // spa-framework.js
 
-import { BaseController, DefaultErrorController } from './baseController.js'
+import { BaseController, DefaultErrorController, SpaError } from './baseController.js'
 
 /**
   * @typedef { Object } routeObj
@@ -44,30 +44,39 @@ class TinySpa{
   }
 
   /**
-   * Handles the route change based on the URL hash.
+   * @description Handles the route change based on the URL hash.
    */
   async handleRouteChange() {
-    if (this.currentController) {
-      await this.currentController.onUnmount();
-    }
-    this.currentController = null
-
-    const path = window.location.hash.slice(1) || '/';
-    const routeObj = this.routes[path];
-
     try {
+      if (this.currentController) {
+        await this.currentController.onUnmount();
+      }
+      this.currentController = null
+
+      const path = window.location.hash.slice(1) || '/';
+      const routeObj = this.routes[path];
+
       const response = await fetch(routeObj.templateUrl);
-      if (!response.ok) throw new Error(`Failed to fetch template: ${routeObj.templateUrl}`);
+      if (!response.ok) {
+        this.renderError(
+          new SpaError(`Failed to fetch template: ${routeObj.templateUrl}`)
+        )
+        return
+      }
       const html = await response.text();
       const appContainer = document.getElementById('app');
-      if (appContainer) {
-        appContainer.innerHTML = html;
-        this.loadPageStyles(routeObj.templateUrl);
-      } else {
-        console.error('App container with id "app" not found.');
+      if (!appContainer) {
+        this.renderError(
+          new SpaError(`Failed to identify app container with id "app".`)
+        )
+        return
       }
+      appContainer.innerHTML = html;
+      // this.loadPageStyles(routeObj.templateUrl);
+      this.currentController = new routeObj.controller();
+      await this.currentController.onMount()
     } catch (err) {
-      this.handleRoutingError(path);
+      this.renderError(err);
     }
   }
 
@@ -105,20 +114,28 @@ class TinySpa{
     * @param{ string } errMsg
     * @param{ number } errorCode
   */
-  function registerError(errMsg, errorCode=404) {
+  registerError(errMsg, errorCode=404) {
     return
+  }
+
+  /**
+    * @param { Error | SpaError } err
+    */
+  renderError(err) {
+    /**
+      * @type { SpaError }
+      */
+    const error = err instanceof SpaError
+      ? err
+      : new SpaError(err.message, 500);  // what's the err.message?
+    if (!(error instanceof SpaError)) {
+      error.stack = err.stack;
+    }
+    DefaultErrorController.lastError = error;
+    new DefaultErrorController().onMount();
   }
 }
 
-class SpaError extends Error {
-  /**
-    * @param{ string } message
-    * @param{ number } code
-    */
-  constructor(message, code=404) {
-    super(message);
-    this.errorCode = code
-  }
-}
+
 
 export default TinySpa
