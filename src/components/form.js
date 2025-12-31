@@ -1,19 +1,45 @@
-// spa-framework/components/form.js
+import { BaseController, SpaError } from '../baseController.js'
 
 /**
- * @class FormComponent
- * @description A reusable component to generate and handle HTML forms from a JSON config.
- */
-export class FormComponent {
+  * @typedef { Object } formField
+  * @property { string } formType
+  * @property { string } formName
+  * @property { string } formLabel
+  * @property { boolean } formRequired
+  */
+
+/**
+  * @typedef { Object } submitBtnObj
+  * @property { string } text
+  */
+
+/**
+  * @typedef { Object } apiObj
+  * @property { string } endpoint
+  * @property { string } method
+  */
+
+/**
+  * @typedef { Object } formConfig
+  * @property { string } targetElementId
+  * @property { Array<formField> } fields
+  * @property { submitBtnObj } submitButton
+  * @property { apiObj } api
+  */
+
+/**
+  * @class FormComponent
+  * @description A reusable component to generate and handle HTML forms from a JSON config.
+  */
+export class FormComponent extends BaseController {
   /**
-   * @param {object} config - The configuration object for the form.
-   * @param {string} config.targetElementId - The ID of the DOM element where the form will be rendered.
-   * @param {Array<object>} config.fields - An array of field configuration objects.
-   * @param {object} config.submitButton - Configuration for the submit button.
-   * @param {object} config.api - API endpoint details for form submission.
-   */
-  constructor(config) {
-    this.config = config;
+    * @param { formConfig } formConfig - The configuration object for the form.
+    * @param { string } cid
+    * @param { string } customCss
+    */
+  constructor(formConfig, cid, customCss) {
+    super(cid, customCss)
+    this.formConfig = formConfig;
     this.render();
   }
 
@@ -22,21 +48,21 @@ export class FormComponent {
    * @returns {string} The complete HTML string for the form.
    */
   generateHtml() {
-    const fieldsHtml = this.config.fields.map(field => {
-      const requiredAttr = field.required ? 'required' : '';
+    const fieldsHtml = this.formConfig.fields.map(field => {
+      const requiredAttr = field.formRequired ? 'required' : '';
       let fieldHtml = `<div class="form-field" style="margin-bottom: 1rem;">
-  <label for="${field.name}" style="display: block; margin-bottom: 0.5rem;">${field.label}</label>`;
+  <label for="${field.formName}" style="display: block; margin-bottom: 0.5rem;">${field.formLabel}</label>`;
 
-      switch (field.type) {
+      switch (field.formType) {
         case 'textarea':
-          fieldHtml += `<textarea id="${field.name}" name="${field.name}" ${requiredAttr} style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;"></textarea>`;
+          fieldHtml += `<textarea id="${field.formName}" name="${field.formName}" ${requiredAttr} style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;"></textarea>`;
           break;
         case 'email':
         case 'text':
         case 'password':
         case 'number':
         default:
-          fieldHtml += `<input type="${field.type}" id="${field.name}" name="${field.name}" ${requiredAttr} style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">`;
+          fieldHtml += `<input type="${field.formType}" id="${field.formName}" name="${field.formName}" ${requiredAttr} style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">`;
           break;
       }
       fieldHtml += `</div>`;
@@ -46,15 +72,12 @@ export class FormComponent {
     return `<form id="generated-form">
   ${fieldsHtml}
   <button type="submit" style="padding: 0.75rem 1.5rem; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer;">
-    ${this.config.submitButton.text}
+    ${this.formConfig.submitButton.text}
   </button>
 </form>
 <div id="form-status" style="margin-top: 1rem;"></div>`;
   }
 
-  /**
-   * Renders the form into the target element and attaches event listeners.
-   */
   render() {
     const targetElement = document.getElementById(this.config.targetElementId);
     if (!targetElement) {
@@ -66,9 +89,6 @@ export class FormComponent {
     this.attachEventListeners();
   }
 
-  /**
-   * Attaches the submit event listener to the form.
-   */
   attachEventListeners() {
     const form = document.getElementById('generated-form');
     if (form) {

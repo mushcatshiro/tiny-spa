@@ -5,9 +5,9 @@ export const suite = (name, cb) => {
     console.groupEnd();
 };
 
-export const test = (desc, fn) => {
+export const test = async (desc, fn) => {
     try {
-        fn();
+        await fn();
         console.log(`✅ ${desc}`);
     } catch (err) {
         console.error(`❌ ${desc}`);

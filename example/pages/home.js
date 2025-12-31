@@ -1,12 +1,19 @@
-// pages/home.js
+import { BaseController, BaseComponent } from 'tiny-spa/baseController.js'
+import { MockHttpRequest } from 'tiny-spa/components/http-request.js'
 
-export class HomeController {
+export class HomeController extends BaseController {
   constructor() {
-    this.chartData = [];
-    // Initial data fetch when the page loads
+    super()
+    this.components.push(new HomeComponent)
+  }
+}
+
+class HomeComponent extends BaseComponent {
+  constructor() {
+    super("home-component")
+    this.chartData = []
     this.fetchData();
 
-    // We need to wait a tick for the DOM to be updated by the router
     setTimeout(() => {
       const refreshButton = document.getElementById('refreshDataBtn');
       if (refreshButton) {
@@ -15,30 +22,24 @@ export class HomeController {
     }, 0);
   }
 
-  async onMount() { }
-
-  /**
-   * Simulates fetching data from a backend.
-   */
   async fetchData() {
-    console.log('Fetching new data...');
-    // Simulate a network request
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const req = new MockHttpRequest(
+      "GET", "http://127.0.0.1/api", {}, {},
+      {
+        code: 200,
+        headers : "",
+        body: Array.from({ length: 5 }, () => Math.floor(Math.random() * 100))
+      },
+    )
 
-    // Generate some random data
-    this.chartData = Array.from({ length: 5 }, () => Math.floor(Math.random() * 100));
-    console.log('Data fetched:', this.chartData);
-
+    const resp = await req.execute()
+    this.chartData = resp.body
     this.updateChart();
   }
 
-  /**
-   * Updates the chart in the DOM with the new data.
-   */
   updateChart() {
     const chartContainer = document.getElementById('chart');
     if (chartContainer) {
-      // Simple bar chart representation
       chartContainer.innerHTML = this.chartData.map(value =>
         `<div style="width: ${value}%; background-color: #4CAF50; color: white; text-align: right; padding: 5px; margin-bottom: 5px; border-radius: 3px;">${value}</div>`
       ).join('');

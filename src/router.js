@@ -1,5 +1,3 @@
-// spa-framework.js
-
 import { BaseController, DefaultErrorController, SpaError } from './baseController.js'
 
 /**
@@ -9,9 +7,9 @@ import { BaseController, DefaultErrorController, SpaError } from './baseControll
   */
 
 /**
- * @class SpaFramework
- * @description A minimal framework for building Single Page Applications.
- */
+  * @class TinySpa
+  * @description A minimal framework for building Single Page Applications.
+  */
 class TinySpa{
   constructor() {
     /**
@@ -33,36 +31,49 @@ class TinySpa{
    * @param { typeof BaseController } controller - The controller function to execute for this route.
    */
   registerRoute(path, templateUrl, controller) {
-    const isValidController = controller && (controller === BaseController || controller.prototype instanceof BaseController);
-    const isValidUrl = typeof templateUrl === 'string' && templateUrl.startsWith('/') && templateUrl.length > 0;
+    const isValidController = controller &&
+      (controller === BaseController || controller.prototype instanceof BaseController);
+    const isValidUrl = typeof templateUrl === 'string' &&
+      templateUrl.startsWith('./') && templateUrl.length > 0;
     if (!isValidController || !isValidUrl) {
-      console.error(`[Router] Validation failed for ${path}. Routing to fallback`)
       templateUrl = ""
       controller = DefaultErrorController
     }
     this.routes[path] = { templateUrl, controller };
   }
 
-  /**
-   * @description Handles the route change based on the URL hash.
-   */
   async handleRouteChange() {
     try {
-      if (this.currentController) {
-        await this.currentController.onUnmount();
-      }
+      if (this.currentController) await this.currentController.onUnmount();
       this.currentController = null
 
       const path = window.location.hash.slice(1) || '/';
       const routeObj = this.routes[path];
-
-      const response = await fetch(routeObj.templateUrl);
+      if (!routeObj) {
+        this.renderError(
+          new SpaError(`Route not found`)
+        )
+        return
+      }
+      console.log(`${routeObj.templateUrl}`)
+      const [response] = await Promise.all([
+        fetch(routeObj.templateUrl).then(r => {
+          console.log("STEP 2: Fetch started and received response");
+          return r;
+        }),
+        this.loadPageStyles(routeObj.templateUrl).catch(err => {
+          console.warn(err.message);
+          return null;
+        })
+      ]);
+      console.log("STEP 3: Promise.all finished");
       if (!response.ok) {
         this.renderError(
           new SpaError(`Failed to fetch template: ${routeObj.templateUrl}`)
         )
         return
       }
+
       const html = await response.text();
       const appContainer = document.getElementById('app');
       if (!appContainer) {
@@ -72,7 +83,6 @@ class TinySpa{
         return
       }
       appContainer.innerHTML = html;
-      // this.loadPageStyles(routeObj.templateUrl);
       this.currentController = new routeObj.controller();
       await this.currentController.onMount()
     } catch (err) {
@@ -80,42 +90,40 @@ class TinySpa{
     }
   }
 
-  /**
-   * Removes the currently active page-specific stylesheet.
-   */
   unloadPageStyles() {
-    const currentstyle = this.existingpagestyle();
-    if (currentstyle) {
-      document.head.removechild(currentstyle);
+    const currentStyle = this.existingPageStyle();
+    if (currentStyle) {
+      currentStyle.remove()
     }
   }
 
   existingPageStyle() {
-    return document.head.querySelector('[data-page-style]')
+    return document.head.querySelector('link[data-page-style]');
   }
 
   /**
-   * Loads a new stylesheet for a specific page.
-   * @param {string} templateUrl - The name of the page (e.g., 'about').
-   */
-  loadPageStyles(templateUrl) {
+    * Loads a new stylesheet for a specific page.
+    * @param {string} templateUrl - The name of the page (e.g., 'about').
+    * @returns { Promise<void> }
+    */
+  async loadPageStyles(templateUrl) {
     this.unloadPageStyles();
-
-    // Create a new <link> element for the new page's CSS
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = `${templateUrl.split('.html')[0]}.css`; // Assumes a file structure like /pages/about/about.css
-    link.dataset.pageStyle = pageName;
-
-    document.head.appendChild(link);
-  }
-
-  /**
-    * @param{ string } errMsg
-    * @param{ number } errorCode
-  */
-  registerError(errMsg, errorCode=404) {
-    return
+    console.log(`${templateUrl}`)
+    const cssHref = templateUrl.replace('.html', '.css');
+    console.log(`${cssHref}`)
+    return new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = cssHref;
+      link.dataset.pageStyle = "true";
+      link.onload = () => resolve();
+      //link.onerror = () => reject(new SpaError(`Failed to load css ${cssHref}`));
+      link.onerror = () => {
+        link.remove();
+        resolve();
+      }
+      document.head.appendChild(link);
+    });
   }
 
   /**

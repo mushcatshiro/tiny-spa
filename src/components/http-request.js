@@ -1,4 +1,9 @@
-
+/**
+  * @typedef { Object } responseObj
+  * @property { number } code
+  * @property { string } headers
+  * @property { Object } body
+  */
 
 export class HttpRequest {
   constructor(
@@ -16,7 +21,6 @@ export class HttpRequest {
   }
 
   async execute() {
-    // header support
     try {
       const options = {
         method: this.method,
@@ -50,4 +54,25 @@ export class HttpRequest {
   async executeStreamResponse() { }
 }
 
-export default HttpRequest
+export class MockHttpRequest extends HttpRequest {
+  /**
+    * @param { string } method
+    * @param { string } url
+    * @param { object } payload
+    * @param { object } headers
+    * @param { responseObj } response
+    */
+  constructor(method, url, payload, headers, response) {
+    super(method=method, url=url, payload=payload, headers=headers);
+    this.response = response
+  }
+
+  /**
+    * @return { Promise<responseObj> }
+    */
+  async execute() {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return this.response
+  }
+}
+
