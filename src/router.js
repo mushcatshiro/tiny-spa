@@ -55,10 +55,8 @@ class TinySpa{
         )
         return
       }
-      console.log(`${routeObj.templateUrl}`)
       const [response] = await Promise.all([
         fetch(routeObj.templateUrl).then(r => {
-          console.log("STEP 2: Fetch started and received response");
           return r;
         }),
         this.loadPageStyles(routeObj.templateUrl).catch(err => {
@@ -66,7 +64,6 @@ class TinySpa{
           return null;
         })
       ]);
-      console.log("STEP 3: Promise.all finished");
       if (!response.ok) {
         this.renderError(
           new SpaError(`Failed to fetch template: ${routeObj.templateUrl}`)
@@ -108,9 +105,10 @@ class TinySpa{
     */
   async loadPageStyles(templateUrl) {
     this.unloadPageStyles();
-    console.log(`${templateUrl}`)
     const cssHref = templateUrl.replace('.html', '.css');
-    console.log(`${cssHref}`)
+    if (!cssHref) {
+      return Promise.resolve()
+    }
     return new Promise((resolve, reject) => {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
