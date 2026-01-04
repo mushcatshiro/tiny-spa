@@ -11,7 +11,10 @@ import { BaseController, DefaultErrorController, SpaError } from './baseControll
   * @description A minimal framework for building Single Page Applications.
   */
 class TinySpa{
-  constructor() {
+  /**
+    * @param { string } appId
+    */
+  constructor(appId="app") {
     /**
       * @type { Object.<string, routeObj> }
       */
@@ -20,6 +23,7 @@ class TinySpa{
       * @type { BaseController | null }
       */
     this.currentController = null;
+    this.appId = appId
     window.addEventListener('hashchange', () => this.handleRouteChange());
     window.addEventListener('load', () => this.handleRouteChange());
   }
@@ -72,7 +76,7 @@ class TinySpa{
       }
 
       const html = await response.text();
-      const appContainer = document.getElementById('app');
+      const appContainer = document.getElementById(this.appId);
       if (!appContainer) {
         this.renderError(
           new SpaError(`Failed to identify app container with id "app".`)
