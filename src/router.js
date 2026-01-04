@@ -84,7 +84,7 @@ class TinySpa{
         return
       }
       appContainer.innerHTML = html;
-      this.currentController = new routeObj.controller();
+      this.currentController = new routeObj.controller(this.appId);
       await this.currentController.onMount()
     } catch (err) {
       this.renderError(err);

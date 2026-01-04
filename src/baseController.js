@@ -16,11 +16,15 @@ export class SpaError extends Error {
 }
 
 export class BaseController {
-  constructor() {
+  /**
+    * @param { string } appId
+    */
+  constructor(appId) {
     /**
      * @type { BaseComponent[] }
      */
     this.components = []
+    this.appId = appId
   }
 
   async onMount() {}
@@ -46,6 +50,13 @@ export class DefaultErrorController extends BaseController {
   static formatStackFlag = false
 
   /**
+    * @param { string } appId
+    */
+  constructor(appId) {
+    super(appId);
+  }
+
+  /**
     * @param { string | null } stack
     */
   formatStack(stack) {
@@ -63,7 +74,7 @@ export class DefaultErrorController extends BaseController {
 
   async onMount() {
     const data = DefaultErrorController.lastError
-    const targetElement = document.getElementById("app");
+    const targetElement = document.getElementById(this.appId);
     const view = `
       <div class="error-container">
         <h2>Error: ${data.code}</h2>
@@ -83,3 +94,10 @@ export class DefaultErrorController extends BaseController {
   }
 }
 
+export class FailedToRegisterController extends BaseController {
+  constructor(appId) { super(appId) }
+  async onMount() {
+    const targetElement = document.getElementById(this.appId);
+    targetElement.innerHTML = `This page failed during route registering.`
+  }
+}

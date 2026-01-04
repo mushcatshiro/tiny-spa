@@ -8,21 +8,19 @@ import { ExampleHttpRequestController } from './pages/example-http-request.js';
 import { ExampleMdController } from './pages/example-md.js';
 import { SimpleChartController } from './pages/simple-bar.js';
 
-// Instantiate the framework
 const router = new TinySpa();
 
-// Register all the pages/routes
 router.registerRoute('/', './pages/home.html', HomeController);
 router.registerRoute('/simple-chart', './pages/simple-bar.html', SimpleChartController);
 // router.registerRoute('/about', './pages/about.html', AboutController);
-//router.registerRoute('/contact', './pages/contact.html', ContactController)
-//jrouter.registerRoute('/example-table', './pages/example-table.html', ExampleTableController)
-//router.registerRoute('/example-scatter', './pages/example-scatter.html', ExampleScatterChartController)
-//router.registerRoute('/example-http-request', './pages/example-http-request.html', ExampleHttpRequestController)
-//router.registerRoute('/example-md', './pages/example-md.html', ExampleMdController)
+// router.registerRoute('/contact', './pages/contact.html', ContactController)
+// router.registerRoute('/example-table', './pages/example-table.html', ExampleTableController)
+// router.registerRoute('/example-scatter', './pages/example-scatter.html', ExampleScatterChartController)
+// router.registerRoute('/example-http-request', './pages/example-http-request.html', ExampleHttpRequestController)
+// router.registerRoute('/example-md', './pages/example-md.html', ExampleMdController)
 
-// Export the router instance at global level for code block rendering
+// Export router instance at global level for code block rendering
 window.app = router;
 
-// Export the router instance at module level
+// Export router instance at module level
 export default router;

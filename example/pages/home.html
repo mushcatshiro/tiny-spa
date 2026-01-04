@@ -25,6 +25,7 @@
   <p>There is many assumptions on how the framework will be used based on the
   creator's bias and </p>
   <p>Below is a simple guide on using the framework.</p>
+
   <h3>Step 1: Hello World</h3>
   <p>Here's a basic project structure and the file contents.</p>
   <pre class="no-render">
@@ -42,6 +43,49 @@
   <div id="app">
   </script>
   </pre>
-  <h3>Step 2: Registering a route</h3>
+
+  <h3>Step 2: Controller and Components</h3>
+  <p>A controller is equivalent to a page, which can consist of many
+  components.</p>
+  <pre class="no-render">
+  project-name
+  |_index.html
+  |_main.js
+  |_pages
+    |_hello.html
+    |_hello.js
+  </pre>
+  <p>All controllers should extend from BaseController to ensure they can be
+  registered to the router.</p>
+  <pre class="no-render">
+  // hello.js
+  import { BaseController  } from 'tiny-spa/baseController.js'
+
+  export class HelloController extends BaseController {
+    constructor(appId) { super(appId) }
+    async onMount {
+      const targetElement = document.getElementById(this.appId);
+      targetElement.innerHTML = `This page failed during route registering.`
+    }
+  }
+  </pre>
+  <p>Take note that the id should be unique and not colliding with the main
+  app's id to prevent unhandled errors.</p>
+  <pre class="text">
+  <script>  // hello.html
+  <div id="hello">
+  </script>
+  </pre>
+
+  <h3>Step 3: Registering a route</h3>
+  <pre class="no-render">
+  // main.js
+  import HelloController from './helloController.js'
+  // ...
+  app.registerRoute('/', './hello.html', helloController);
+  </pre>
+  <p>A route should consist of at least a *.html file and a *.js file.</p>
+
+  <h3>Step 4: Build and Deploy</h3>
 
 </div>
