@@ -1,3 +1,5 @@
+import { BaseComponent } from './components/baseComponent.js'
+
 export class SpaError extends Error {
   /**
     * @param{ string } message
@@ -15,6 +17,9 @@ export class SpaError extends Error {
 
 export class BaseController {
   constructor() {
+    /**
+     * @type { BaseComponent[] }
+     */
     this.components = []
   }
 
@@ -78,32 +83,3 @@ export class DefaultErrorController extends BaseController {
   }
 }
 
-export class BaseComponent {
-  /**
-    * @param { string } cid
-    * @param { string | null } customCss
-    */
-  constructor(cid, customCss=null) {
-    this.cid = cid;
-    this.customCss = customCss;
-    this.styleTag = null;
-    this.defaultCss = null;
-  }
-
-  async onMount() {
-    const cssToLoad = this.customCss ? this.customCss : this.defaultCss;
-    if (cssToLoad) {
-      this.styleTag = document.createElement('style');
-      this.styleTag.id = `style-${this.cid}`;
-      this.styleTag.textContent = cssToLoad;
-      document.head.appendChild(this.styleTag);
-    }
-  }
-
-  async onUnmount() {
-    if (this.styleTag) {
-      this.styleTag.remove();
-      this.styleTag = null;
-    }
-  }
-}

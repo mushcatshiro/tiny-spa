@@ -1,4 +1,5 @@
-import { BaseController, SpaError } from '../baseController.js'
+import { SpaError } from '../baseController.js'
+import { BaseComponent } from './baseComponent.js'
 
 /**
   * @typedef { Object } formField
@@ -31,7 +32,7 @@ import { BaseController, SpaError } from '../baseController.js'
   * @class FormComponent
   * @description A reusable component to generate and handle HTML forms from a JSON config.
   */
-export class FormComponent extends BaseController {
+export class FormComponent extends BaseComponent {
   /**
     * @param { formConfig } formConfig - The configuration object for the form.
     * @param { string } cid
@@ -39,8 +40,44 @@ export class FormComponent extends BaseController {
     */
   constructor(formConfig, cid, customCss) {
     super(cid, customCss)
-    this.formConfig = formConfig;
+    this.config = formConfig;
+    this.registerDefaultCss()
     this.render();
+  }
+
+  registerDefaultCss() {
+    this.defaultCss = `
+    .form-field {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #form-status {
+      margin-top: 1rem;
+    }
+    `
   }
 
   /**
@@ -48,57 +85,62 @@ export class FormComponent extends BaseController {
    * @returns {string} The complete HTML string for the form.
    */
   generateHtml() {
-    const fieldsHtml = this.formConfig.fields.map(field => {
+    const fieldsHtml = this.config.fields.map(field => {
       const requiredAttr = field.formRequired ? 'required' : '';
-      let fieldHtml = `<div class="form-field" style="margin-bottom: 1rem;">
-  <label for="${field.formName}" style="display: block; margin-bottom: 0.5rem;">${field.formLabel}</label>`;
+      let fieldHtml = `<div class="form-field">
+      <label for="${field.formName}">${field.formLabel}</label>`;
 
       switch (field.formType) {
         case 'textarea':
-          fieldHtml += `<textarea id="${field.formName}" name="${field.formName}" ${requiredAttr} style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;"></textarea>`;
+          fieldHtml += `<textarea id="${field.formName}" name="${field.formName}" ${requiredAttr}></textarea>`;
           break;
         case 'email':
         case 'text':
         case 'password':
         case 'number':
         default:
-          fieldHtml += `<input type="${field.formType}" id="${field.formName}" name="${field.formName}" ${requiredAttr} style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">`;
+          fieldHtml += `<input type="${field.formType}" id="${field.formName}" name="${field.formName}" ${requiredAttr}>`;
           break;
       }
       fieldHtml += `</div>`;
       return fieldHtml;
     }).join('');
 
-    return `<form id="generated-form">
-  ${fieldsHtml}
-  <button type="submit" style="padding: 0.75rem 1.5rem; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer;">
-    ${this.formConfig.submitButton.text}
-  </button>
-</form>
-<div id="form-status" style="margin-top: 1rem;"></div>`;
+    return `
+      <form id="${this.cid}-form" for=${this.config.api.endpoint} method="POST">
+      ${fieldsHtml}
+      <button type="submit">
+        ${this.config.submitButton.text}
+      </button>
+      </form>
+      <div id="form-status"></div>`;
   }
 
   render() {
     const targetElement = document.getElementById(this.config.targetElementId);
     if (!targetElement) {
-      console.error(`Form component target element with ID "${this.config.targetElementId}" not found.`);
-      return;
+      throw new SpaError(
+        `Form component target element with ID "${this.config.targetElementId}" not found.`
+      );
     }
 
     targetElement.innerHTML = this.generateHtml();
     this.attachEventListeners();
   }
 
-  attachEventListeners() {
-    const form = document.getElementById('generated-form');
-    if (form) {
-      form.addEventListener('submit', (event) => this.handleSubmit(event));
+  attachEventListeners(submitFunc=null) {
+    const form = document.getElementById(`${this.cid}-form`);
+    if (!form) throw new SpaError(`form with id ${this.cid}-form is not found`)
+    if (submitFunc) {
+      form.addEventListener('submit', (event) => submitFunc(event));
+      return
     }
+    form.addEventListener('submit', (event) => this.handleSubmit(event));
   }
 
   /**
    * Handles the form submission.
-   * @param {Event} event - The form submission event.
+   * @param { Event & { target: HTMLFormElement } } event - The form submission event.
    */
   async handleSubmit(event) {
     event.preventDefault();
@@ -115,7 +157,6 @@ export class FormComponent extends BaseController {
       console.log('Submitting to:', this.config.api.endpoint);
       console.log('With data:', data);
 
-      /*
       const response = await fetch(this.config.api.endpoint, {
           method: this.config.api.method || 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -125,10 +166,6 @@ export class FormComponent extends BaseController {
       if (!response.ok) {
           throw new Error('Network response was not ok');
       }
-      */
-
-      // Simulate a successful API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
 
       formStatus.textContent = 'Form submitted successfully!';
       formStatus.style.color = 'green';
@@ -142,4 +179,17 @@ export class FormComponent extends BaseController {
   }
 }
 
-export default FormComponent
+export async function mockSubmitFunc(event) {
+  event.preventDefault();
+  const formStatus = document.getElementById('form-status');
+  formStatus.textContent = 'Submitting...';
+  formStatus.style.color = 'black';
+
+  const formData = new FormData(event.target);
+  const data = Object.fromEntries(formData.entries());
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  formStatus.textContent = 'Form submitted successfully!';
+  formStatus.style.color = 'green';
+  event.target.reset();
+}
+
