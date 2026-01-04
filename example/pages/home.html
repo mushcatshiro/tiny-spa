@@ -1,12 +1,47 @@
 <div>
-  <h1>Home Page</h1>
-  <p>Welcome to the home page of our minimal SPA.</p>
-  <div class="chart-container">
-    <h2>Dynamic Data Chart</h2>
-    <div id="chart">
-      <!-- Chart will be rendered here -->
-      <p>Loading chart data...</p>
-    </div>
-    <button id="refreshDataBtn">Refresh Data</button>
-  </div>
+  <p>Welcome to the home page of Tiny-SPA.</p>
+  <h2>Why Tiny-SPA?</h2>
+  <p>There are a few main motivation of creating Tiny-SPA, including to learn
+  javascript/frontend framework design, to have something lightweight but
+  battery included to build internal toolings, and most importantly, a gear
+  switch from server/application code.</p>
+  <h2>How Tiny-SPA Works?</h2>
+  <p>Tiny-SPA at its core is a router that register routes and handles route
+  change by creating the new page's component, attaching it to the preferred
+  app's main div. By default, errors are rendered to the UI, which can be an
+  undesired behavior that forces errors to be handled better at component
+  level.</p>
+  <p>Styles is offerred at page and component level. A page level style expects
+  a *.css file that matches the *.html filename. The style might not be applied
+  onto the page depending on the *.css file transfer speed, and can result in a
+  untyled page until it is fully loaded. Page level style will be removed upon
+  route changes. Component level style is optional. Most if not all out-of-box
+  components have a default style, that can be overwritten. It creates a style
+  scoped to the component itself and is removed upon the component is
+  unmouned.</p>
+  <p>In terms of lifecycle, there is only three: construction, onMount and
+  onUnmount. onChange is missing and is preferred to be explicitly writen with
+  `HTMLElement.addEventListener` or equivalent.</p>
+  <p>There is many assumptions on how the framework will be used based on the
+  creator's bias and </p>
+  <p>Below is a simple guide on using the framework.</p>
+  <h3>Step 1: Hello World</h3>
+  <p>Here's a basic project structure and the file contents.</p>
+  <pre class="no-render">
+  project-name
+  |_index.html
+  |_main.js
+  </pre>
+  <pre class="no-render">
+  // main.js
+  import TinySpa from 'tiny-spa/router.js';
+  const app = new TinySpa();
+  </pre>
+  <pre class="text">
+  <script>  // index.html
+  <div id="app">
+  </script>
+  </pre>
+  <h3>Step 2: Registering a route</h3>
+
 </div>
