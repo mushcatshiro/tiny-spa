@@ -4,29 +4,32 @@ import { MockHttpRequest } from 'tiny-spa/components/http-request.js'
 
 
 export class SimpleChartController extends BaseController {
-  constructor() {
-    super()
+  constructor(appId) {
+    super(appId)
     this.components.push(new ChartComponent)
   }
 }
 
 class ChartComponent extends BaseComponent {
   constructor() {
-    super("home-component")
+    super("simple-bar")
     this.chartData = []
-    this.fetchData();
+    this.fetchData(0);
 
     setTimeout(() => {
       const refreshButton = document.getElementById('refreshDataBtn');
       if (refreshButton) {
-        refreshButton.addEventListener('click', () => this.fetchData());
+        refreshButton.addEventListener('click', () => this.fetchData(200));
       }
     }, 0);
   }
 
-  async fetchData() {
+  /**
+    * @param { number } delay
+    */
+  async fetchData(delay) {
     const req = new MockHttpRequest(
-      "GET", "http://127.0.0.1/api", {}, {},
+      "GET", "http://127.0.0.1/api", {}, {}, delay,
       {
         code: 200,
         headers : "",
@@ -40,7 +43,7 @@ class ChartComponent extends BaseComponent {
   }
 
   updateChart() {
-    const chartContainer = document.getElementById('chart');
+    const chartContainer = document.getElementById(this.cid);
     if (chartContainer) {
       chartContainer.innerHTML = this.chartData.map(value =>
         `<div style="width: ${value}%; background-color: #4CAF50; color: white; text-align: right; padding: 5px; margin-bottom: 5px; border-radius: 3px;">${value}</div>`

@@ -41,5 +41,8 @@ export class HomeController extends BaseController {
       }
       */
     });
+    document.querySelectorAll('iframe').forEach(block => {
+      block.height = block.contentWindow.document.body.scrollHeight + "px";
+    });
   }
 }

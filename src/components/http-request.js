@@ -60,18 +60,20 @@ export class MockHttpRequest extends HttpRequest {
     * @param { string } url
     * @param { object } payload
     * @param { object } headers
+    * @param { number } delay
     * @param { responseObj } response
     */
-  constructor(method, url, payload, headers, response) {
+  constructor(method, url, payload, headers, delay, response) {
     super(method=method, url=url, payload=payload, headers=headers);
     this.response = response
+    this.delay = delay
   }
 
   /**
     * @return { Promise<responseObj> }
     */
   async execute() {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, this.delay));
     return this.response
   }
 }
