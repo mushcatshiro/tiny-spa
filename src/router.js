@@ -29,10 +29,9 @@ class TinySpa{
   }
 
   /**
-   * Registers a route.
-   * @param { string } path - The URL path (e.g., '/home').
-   * @param { string } templateUrl - The path to the HTML template file.
-   * @param { typeof BaseController } controller - The controller function to execute for this route.
+   * @param { string } path
+   * @param { string } templateUrl
+   * @param { typeof BaseController } controller
    */
   registerRoute(path, templateUrl, controller) {
     const isValidController = controller &&
@@ -103,8 +102,7 @@ class TinySpa{
   }
 
   /**
-    * Loads a new stylesheet for a specific page.
-    * @param {string} templateUrl - The name of the page (e.g., 'about').
+    * @param { string } templateUrl
     * @returns { Promise<void> }
     */
   async loadPageStyles(templateUrl) {
@@ -145,7 +143,6 @@ class TinySpa{
     new DefaultErrorController().onMount();
   }
 }
-
 
 
 export default TinySpa
