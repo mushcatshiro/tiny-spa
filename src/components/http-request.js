@@ -46,7 +46,7 @@ export class HttpRequest {
       return result
     } catch (error) {
       if (error.name === 'AbortError') {
-        return new Promise(() => {});
+        return { aborted: true }
       }
       console.error('HttpRequets failed:', error)
       throw error  // TOOD: do better

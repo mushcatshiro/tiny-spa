@@ -28,11 +28,15 @@ export class BaseController {
   }
 
   async onMount() {
-    this.components.forEach(comp => comp.onMount())
+    for (const comp of this.components) {
+      await comp.onMount()
+    }
   }
 
   async onUnmount() {
-    this.components.forEach(comp => comp.onUnmount())
+    for (const comp of this.components) {
+      await comp.onUnmount()
+    }
   }
 
   render() {}

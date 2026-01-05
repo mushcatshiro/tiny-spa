@@ -13,7 +13,7 @@ export class BaseComponent {
     this._eventListeners = []
     this._timers = [];
     this._intervals = [];
-    this.abortController = new AbortController();
+    this.abortController = null;
   }
 
   async onMount() {
@@ -21,20 +21,30 @@ export class BaseComponent {
     if (cssToLoad) {
       this.styleTag = document.createElement('style');
       this.styleTag.textContent = `@scope { ${cssToLoad} }`;
-      const container = document.getElementById(this.cid);
+      const container = this.getComponentContainer();
       container.prepend(this.styleTag);
     }
+    this.abortController = null;
+    this.abortController = new AbortController();
   }
 
   async onUnmount() {
+    this.removeAllResources()
     if (this.styleTag) {
       this.styleTag.remove();
       this.styleTag = null;
     }
   }
 
+  /**
+    * @returns { HTMLElement }
+    */
+  getComponentContainer() {
+    return document.getElementById(this.cid);
+  }
+
   addListener(elementId, eventType, handler) {
-    const element = document.getElementById(elementId);
+    const element = this.getComponentContainer().querySelector(`#${elementId}`);
     if (!element) return;
     const boundHandler = handler.bind(this);
     element.addEventListener(eventType, boundHandler);
@@ -54,6 +64,9 @@ export class BaseComponent {
   }
 
   async safeFetch(method, url, payload, headers) {
+    if (!this.abortController) {
+      throw new Error("safeFetch must not be called before onMount")
+    }
     const client = new HttpRequest(method, url, payload, headers=headers)
     const response = await client.execute(this.abortController)
     return response
@@ -72,5 +85,6 @@ export class BaseComponent {
     this._intervals = [];
 
     this.abortController.abort()
+    this.abortController = null
   }
 }
