@@ -84,6 +84,7 @@ class TinySpa{
       }
       appContainer.innerHTML = html;
       this.currentController = new routeObj.controller(this.appId);
+      this.currentController.render()
       await this.currentController.onMount()
     } catch (err) {
       this.renderError(err);
@@ -140,7 +141,7 @@ class TinySpa{
       error.stack = err.stack;
     }
     DefaultErrorController.lastError = error;
-    new DefaultErrorController().onMount();
+    new DefaultErrorController(this.appId).render();
   }
 }
 

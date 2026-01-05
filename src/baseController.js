@@ -27,12 +27,12 @@ export class BaseController {
     this.appId = appId
   }
 
-  async onMount() {}
+  async onMount() {
+    this.components.forEach(comp => comp.onMount())
+  }
 
   async onUnmount() {
-    this.components.forEach(comp => {
-      comp.onUnmount();
-    })
+    this.components.forEach(comp => comp.onUnmount())
   }
 
   render() {}
@@ -72,7 +72,7 @@ export class DefaultErrorController extends BaseController {
       .replace(/at /g, '<b style="color: #ff6b6b;">at </b>');
   }
 
-  async onMount() {
+  render() {
     const data = DefaultErrorController.lastError
     const targetElement = document.getElementById(this.appId);
     const view = `
@@ -96,7 +96,7 @@ export class DefaultErrorController extends BaseController {
 
 export class FailedToRegisterController extends BaseController {
   constructor(appId) { super(appId) }
-  async onMount() {
+  render() {
     const targetElement = document.getElementById(this.appId);
     targetElement.innerHTML = `This page failed during route registering.`
   }

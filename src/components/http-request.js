@@ -6,11 +6,18 @@
   */
 
 export class HttpRequest {
+  /**
+    * @param { string } method
+    * @param { string } url
+    * @param { Object } payload
+    * @param { string } formElmId
+    * @param { Object } headers
+    */
   constructor(
     method,
     url,
     payload = null,
-    formElmId = null,
+    formElmId = "",
     headers = { 'Content-Type': 'application/json' }
   ) {
     this.method = method;
@@ -20,11 +27,12 @@ export class HttpRequest {
     this.headers = headers
   }
 
-  async execute() {
+  async execute(signal) {
     try {
       const options = {
         method: this.method,
-        headers: this.headers
+        headers: this.headers,
+        signal: signal,
       }
       if (this.payload) {
         options.body = JSON.stringify(this.payload)
@@ -37,12 +45,16 @@ export class HttpRequest {
       const result = await response.json()
       return result
     } catch (error) {
+      if (error.name === 'AbortError') {
+        return new Promise(() => {});
+      }
       console.error('HttpRequets failed:', error)
-      throw error
+      throw error  // TOOD: do better
     }
   }
 
   async executeFormData() {
+    // TODO: separate
     if (this.formElmId === "") {
       throw new Error(`Form Element ID does not exists: ${this.formElmId}`);
     }
@@ -51,7 +63,9 @@ export class HttpRequest {
     await this.execute()
   }
 
-  async executeStreamResponse() { }
+  async executeStreamResponse() {
+    // TODO: separate
+  }
 }
 
 export class MockHttpRequest extends HttpRequest {
