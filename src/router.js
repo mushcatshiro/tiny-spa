@@ -24,6 +24,7 @@ class TinySpa{
       */
     this.currentController = null;
     this.appId = appId
+    this.routingAbortController = null;
     window.addEventListener('hashchange', () => this.handleRouteChange());
     window.addEventListener('load', () => this.handleRouteChange());
   }
@@ -46,43 +47,33 @@ class TinySpa{
   }
 
   async handleRouteChange() {
+    if (this.routingAbortController) {
+      this.routingAbortController.abort()
+    }
+
+    const abortController = new AbortController();
+    this.routingAbortController = abortController;
+    const signal = abortController.signal;
     try {
       if (this.currentController) await this.currentController.onUnmount();
       this.currentController = null
 
       const path = window.location.hash.slice(1) || '/';
       const routeObj = this.routes[path];
-      if (!routeObj) {
-        this.renderError(
-          new SpaError(`Route not found`)
-        )
-        return
-      }
-      const [response] = await Promise.all([
-        fetch(routeObj.templateUrl).then(r => {
-          return r;
-        }),
-        this.loadPageStyles(routeObj.templateUrl).catch(err => {
-          console.warn(err.message);
-          return null;
-        })
-      ]);
-      if (!response.ok) {
-        this.renderError(
-          new SpaError(`Failed to fetch template: ${routeObj.templateUrl}`)
-        )
-        return
-      }
+      if (!routeObj) throw new SpaError(`Route not found`)
+
+      console.log("start fetch")
+      const response = await fetch(routeObj.templateUrl, { signal });
+      if (!response.ok) throw new SpaError(`Failed to fetch template: ${routeObj.templateUrl}`)
+      console.log("end fetch")
 
       const html = await response.text();
+      if (signal.aborted) return;
       const appContainer = document.getElementById(this.appId);
-      if (!appContainer) {
-        this.renderError(
-          new SpaError(`Failed to identify app container with id "app".`)
-        )
-        return
-      }
+      if (!appContainer) throw new SpaError(`Failed to identify app container with id "app".`)
+
       appContainer.innerHTML = html;
+      await this.loadPageStyles(routeObj.templateUrl);
       this.currentController = new routeObj.controller(this.appId);
       this.currentController.render()
       await this.currentController.onMount()
@@ -140,8 +131,8 @@ class TinySpa{
     if (!(error instanceof SpaError)) {
       error.stack = err.stack;
     }
-    DefaultErrorController.lastError = error;
-    new DefaultErrorController(this.appId).render();
+    const errorController = new DefaultErrorController(this.appId);
+    errorController.setData(error).render();
   }
 }
 

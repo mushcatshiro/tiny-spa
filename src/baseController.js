@@ -21,21 +21,30 @@ export class BaseController {
     */
   constructor(appId) {
     /**
-     * @type { BaseComponent[] }
-     */
+      * @type { BaseComponent[] }
+      */
     this.components = []
-    this.appId = appId
+    this.appId = appId;
+    /**
+      * @type { Object }
+      */
+    this.data = {};
+  }
+
+  setData(obj) {
+    this.data = {...this.data, ...obj};
+    return this
   }
 
   async onMount() {
     for (const comp of this.components) {
-      await comp.onMount()
+      await comp.onMount();
     }
   }
 
   async onUnmount() {
     for (const comp of this.components) {
-      await comp.onUnmount()
+      await comp.onUnmount();
     }
   }
 
@@ -49,7 +58,6 @@ export class BaseController {
   * @property { boolean } formatStackFlag
   */
 export class DefaultErrorController extends BaseController {
-  static lastError = null;
   static projectIdentifier = ""
   static formatStackFlag = false
 
@@ -77,7 +85,7 @@ export class DefaultErrorController extends BaseController {
   }
 
   render() {
-    const data = DefaultErrorController.lastError
+    const data = this.data
     const targetElement = document.getElementById(this.appId);
     const view = `
       <div class="error-container">

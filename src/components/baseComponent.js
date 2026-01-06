@@ -43,8 +43,8 @@ export class BaseComponent {
     return document.getElementById(this.cid);
   }
 
-  addListener(elementId, eventType, handler) {
-    const element = this.getComponentContainer().querySelector(`#${elementId}`);
+  addListener(selector, eventType, handler) {
+    const element = this.getComponentContainer().querySelector(selector);
     if (!element) return;
     const boundHandler = handler.bind(this);
     element.addEventListener(eventType, boundHandler);
