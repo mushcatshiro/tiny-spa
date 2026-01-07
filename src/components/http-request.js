@@ -55,12 +55,6 @@ export class HttpRequest {
 
   async executeFormData() {
     // TODO: separate
-    if (this.formElmId === "") {
-      throw new Error(`Form Element ID does not exists: ${this.formElmId}`);
-    }
-    const form = document.querySelector(this.formElmId)
-    this.payload = new FormData(form)
-    await this.execute()
   }
 
   async executeStreamResponse() {
@@ -78,7 +72,7 @@ export class MockHttpRequest extends HttpRequest {
     * @param { responseObj } response
     */
   constructor(method, url, payload, headers, delay, response) {
-    super(method=method, url=url, payload=payload, headers=headers);
+    super(method, url, payload, headers);
     this.response = response
     this.delay = delay
   }

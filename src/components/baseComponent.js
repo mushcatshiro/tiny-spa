@@ -24,7 +24,7 @@ export class BaseComponent {
       const container = this.getComponentContainer();
       container.prepend(this.styleTag);
     }
-    this.abortController = null;
+    if (this.abortController) this.removeAllResources()
     this.abortController = new AbortController();
   }
 
@@ -67,7 +67,7 @@ export class BaseComponent {
     if (!this.abortController) {
       throw new Error("safeFetch must not be called before onMount")
     }
-    const client = new HttpRequest(method, url, payload, headers=headers)
+    const client = new HttpRequest(method, url, payload, headers)
     const response = await client.execute(this.abortController)
     return response
   }
@@ -84,7 +84,7 @@ export class BaseComponent {
     this._intervals.forEach(id => clearInterval(id));
     this._intervals = [];
 
-    this.abortController.abort()
+    if (this.abortController) this.abortController.abort()
     this.abortController = null
   }
 }
