@@ -62,13 +62,12 @@ class TinySpa{
       const routeObj = this.routes[path];
       if (!routeObj) throw new SpaError(`Route not found`)
 
-      console.log("start fetch")
       const response = await fetch(routeObj.templateUrl, { signal });
+      if (signal.aborted) return;
       if (!response.ok) throw new SpaError(`Failed to fetch template: ${routeObj.templateUrl}`)
-      console.log("end fetch")
 
       const html = await response.text();
-      if (signal.aborted) return;
+
       const appContainer = document.getElementById(this.appId);
       if (!appContainer) throw new SpaError(`Failed to identify app container with id "app".`)
 
@@ -78,6 +77,10 @@ class TinySpa{
       this.currentController.render()
       await this.currentController.onMount()
     } catch (err) {
+      if (err.name === "AbortError") {
+        return
+      }
+      //console.log(err)
       this.renderError(err);
     }
   }
@@ -132,7 +135,8 @@ class TinySpa{
       error.stack = err.stack;
     }
     const errorController = new DefaultErrorController(this.appId);
-    errorController.setData(error).render();
+    this.currentController = errorController.setData(error);
+    this.currentController.render()
   }
 }
 
