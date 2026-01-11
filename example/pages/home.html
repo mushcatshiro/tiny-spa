@@ -21,7 +21,8 @@
   unmouned.</p>
   <p>In terms of lifecycle, there is only three: construction, onMount and
   onUnmount. onChange is missing and is preferred to be explicitly writen with
-  `HTMLElement.addEventListener` or equivalent.</p>
+  `HTMLElement.addEventListener` or equivalent. More on lifecycle management is
+  documented here.</p>
   <p>There is many assumptions on how the framework will be used based on the
   creator's bias and </p>
   <p>Below is a simple guide on using the framework.</p>
@@ -69,6 +70,8 @@
     }
   }
   </pre>
+  <p>Controller should be concerned about the layout and placement of each
+  component, Component provides the rest.</p>
   <p>Take note that the id should be unique and not colliding with the main
   app's id to prevent unhandled errors.</p>
   <pre class="text">
@@ -87,17 +90,22 @@
   <p>A route should consist of at least a *.html file and a *.js file.</p>
 
   <h3>Step 4: Build and Deploy</h3>
-  <p><a href"">Vite</a> is the preferred build tool for Tiny-SPA and the only
+  <p><a href="">Vite</a> is the preferred build tool for Tiny-SPA and the only
   external dependency required. Simply run the following command</p>
   <pre>
   vite build && vite preview
   </pre>
-  <p>The <pre>--minify</pre> flag can be used for debugging. The files will be
+  <p>The <code>--minify</code> flag can be used for debugging. The files will be
   found in the dist directory by default. To deploy the SPA, with e.g. Nginx,
   copy the files in dist directory </p>
 
-
   <h2>Examples</h2>
-  <iframe src="#/simple-chart" scrolling="no" style="width: 100%; border: none;"></iframe>
+  <div id="simple-bar-container">
+    <h2>Dynamic Data Chart</h2>
+    <div id="simple-bar">
+      <p>Loading chart data...</p>
+    </div>
+    <button id="refreshDataBtn">Refresh Data</button>
+  </div>
 
 </div>

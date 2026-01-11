@@ -1,33 +1,30 @@
-import { BaseController  } from 'tiny-spa/baseController.js'
 import { BaseComponent } from 'tiny-spa/components/baseComponent.js'
 import { MockHttpRequest } from 'tiny-spa/components/http-request.js'
 
 
-export class SimpleChartController extends BaseController {
-  constructor(appId) {
-    super(appId)
-    this.components.push(new ChartComponent)
-  }
-}
-
-class ChartComponent extends BaseComponent {
+export class ChartComponent extends BaseComponent {
   constructor() {
-    super("simple-bar")
+    super("simple-bar-container")
     this.chartData = []
-    this.fetchData(0);
 
-    setTimeout(() => {
-      const refreshButton = document.getElementById('refreshDataBtn');
-      if (refreshButton) {
-        refreshButton.addEventListener('click', () => this.fetchData(200));
-      }
-    }, 0);
+    this.init();
+  }
+
+  init() {
+    this.simpleBarDivId = "#simple-bar";
+  }
+
+  async onMount() {
+    console.log("onMount");
+    await this.fetchData(0);
+    this.addListener('#refreshDataBtn', 'click', async () => await this.fetchData(200));
   }
 
   /**
     * @param { number } delay
     */
   async fetchData(delay) {
+    console.log("here")
     const req = new MockHttpRequest(
       "GET", "http://127.0.0.1/api", {}, {}, delay,
       {
@@ -43,7 +40,8 @@ class ChartComponent extends BaseComponent {
   }
 
   updateChart() {
-    const chartContainer = document.getElementById(this.cid);
+    const chartContainer = this.getComponentContainer()
+      .querySelector(this.simpleBarDivId);
     if (chartContainer) {
       chartContainer.innerHTML = this.chartData.map(value =>
         `<div style="width: ${value}%; background-color: #4CAF50; color: white; text-align: right; padding: 5px; margin-bottom: 5px; border-radius: 3px;">${value}</div>`

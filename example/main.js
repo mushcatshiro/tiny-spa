@@ -1,17 +1,17 @@
 import TinySpa from 'tiny-spa/router.js';
 import { HomeController } from './pages/home.js';
+/*
 import { AboutController } from './pages/about.js';
 import { ContactController } from './pages/contact.js';
 import { ExampleTableController } from './pages/example-table.js'
 import { ExampleScatterChartController } from './pages/example-scatter.js';
 import { ExampleHttpRequestController } from './pages/example-http-request.js';
 import { ExampleMdController } from './pages/example-md.js';
-import { SimpleChartController } from './pages/simple-bar.js';
+*/
 
 const router = new TinySpa();
 
 router.registerRoute('/', './pages/home.html', HomeController);
-router.registerRoute('/simple-chart', './pages/simple-bar.html', SimpleChartController);
 // router.registerRoute('/about', './pages/about.html', AboutController);
 // router.registerRoute('/contact', './pages/contact.html', ContactController)
 // router.registerRoute('/example-table', './pages/example-table.html', ExampleTableController)
