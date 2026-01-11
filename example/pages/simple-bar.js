@@ -15,7 +15,6 @@ export class ChartComponent extends BaseComponent {
   }
 
   async onMount() {
-    console.log("onMount");
     await this.fetchData(0);
     this.addListener('#refreshDataBtn', 'click', async () => await this.fetchData(200));
   }
@@ -24,7 +23,6 @@ export class ChartComponent extends BaseComponent {
     * @param { number } delay
     */
   async fetchData(delay) {
-    console.log("here")
     const req = new MockHttpRequest(
       "GET", "http://127.0.0.1/api", {}, {}, delay,
       {
