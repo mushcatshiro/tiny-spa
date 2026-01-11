@@ -87,6 +87,15 @@
   <p>A route should consist of at least a *.html file and a *.js file.</p>
 
   <h3>Step 4: Build and Deploy</h3>
+  <p><a href"">Vite</a> is the preferred build tool for Tiny-SPA and the only
+  external dependency required. Simply run the following command</p>
+  <pre>
+  vite build && vite preview
+  </pre>
+  <p>The <pre>--minify</pre> flag can be used for debugging. The files will be
+  found in the dist directory by default. To deploy the SPA, with e.g. Nginx,
+  copy the files in dist directory </p>
+
 
   <h2>Examples</h2>
   <iframe src="#/simple-chart" scrolling="no" style="width: 100%; border: none;"></iframe>
