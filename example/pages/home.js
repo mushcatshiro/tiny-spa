@@ -25,4 +25,6 @@ export class HomeController extends BaseController {
     });
     // here
   }
+
+  async onUnmount() { super.onUnmount() };
 }

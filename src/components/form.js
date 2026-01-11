@@ -29,10 +29,26 @@ import { BaseComponent } from './baseComponent.js'
   */
 
 /**
+  * @param { string } targetElmId
+  * @param { string } btnText
+  * @param { string } endpoint
+  * @param { string } method
+  */
+function buildSubmitBtnFormConfig(targetElmId, btnText, endpoint, method) {
+  return {
+    targetElementId: targetElmId,
+    submitBtnObj: { text: btnText },
+    apiObj: { endpoint: endpoint, method: method },
+  }
+}
+
+function buildFormField() {}
+
+/**
   * @class FormComponent
   * @description A reusable component to generate and handle HTML forms from a JSON config.
   */
-export class FormComponent extends BaseComponent {
+class FormComponent extends BaseComponent {
   /**
     * @param { formConfig } formConfig - The configuration object for the form.
     * @param { string } cid
@@ -193,3 +209,8 @@ export async function mockSubmitFunc(event) {
   event.target.reset();
 }
 
+export {
+  buildSubmitBtnFormConfig,
+  buildFormField,
+  FormComponent,
+}

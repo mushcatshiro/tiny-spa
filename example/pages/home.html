@@ -14,7 +14,7 @@
   <p>Styles is offerred at page and component level. A page level style expects
   a *.css file that matches the *.html filename. The style might not be applied
   onto the page depending on the *.css file transfer speed, and can result in a
-  untyled page until it is fully loaded. Page level style will be removed upon
+  unstyled page until it is fully loaded. Page level style will be removed upon
   route changes. Component level style is optional. Most if not all out-of-box
   components have a default style, that can be overwritten. It creates a style
   scoped to the component itself and is removed upon the component is
@@ -22,10 +22,12 @@
   <p>In terms of lifecycle, there is only three: construction, onMount and
   onUnmount. onChange is missing and is preferred to be explicitly writen with
   `HTMLElement.addEventListener` or equivalent. More on lifecycle management is
-  documented here.</p>
+  documented <a href="">here</a>.</p>
   <p>There is many assumptions on how the framework will be used based on the
-  creator's bias and </p>
-  <p>Below is a simple guide on using the framework.</p>
+  creator's bias and will remain as is unless convinved otherwise. Most of the
+  contentions decisions are document <a href="">here</a> and new discussions
+  will be populated.</p>
+  <p>Below is a simple guide on using the framework with some examples.</p>
 
   <h3>Step 1: Hello World</h3>
   <p>Here's a basic project structure and the file contents.</p>
@@ -95,17 +97,43 @@
   <pre>
   vite build && vite preview
   </pre>
-  <p>The <code>--minify</code> flag can be used for debugging. The files will be
-  found in the dist directory by default. To deploy the SPA, with e.g. Nginx,
-  copy the files in dist directory </p>
+  <p>The <code>--minify</code> flag can be used for debugging. The files will
+  be found in the dist directory by default. To deploy the SPA with Nginx, copy
+  the files in dist directory into <code>root</code> and use the following
+  nginx config file.</p>
+  <pre>
+  server {
+    listen 80;
+    server_name localhost; # Replace with your domain name in production
+
+    # Root directory for your built application
+    root /var/www/html/your-app/dist; # Update this path to your specific location
+    index index.html;
+
+    location / {
+        # Try to serve the requested file URI
+        try_files $uri $uri/ /index.html =404;
+    }
+  }
+  </pre>
 
   <h2>Examples</h2>
   <div id="simple-bar-container">
-    <h2>Dynamic Data Chart</h2>
+    <h3>Dynamic Data Chart</h3>
     <div id="simple-bar">
       <p>Loading chart data...</p>
     </div>
     <button id="refreshDataBtn">Refresh Data</button>
   </div>
+  <p>If we take a look into <code>home.js</code>, there is some gotchas that is
+  worthwhile mentioning. A component is first added to the controller through a
+  <code>this.components.push(new SomeComponent())</code>. There is no
+  convinient function for registering component to controller. Next,
+  <code>super.onMount()</code> and <code>super.onUnmount()</code> need to be
+  manually called to ensure all the components are mounted and unmounted. It is
+  also crucial to point out that the sequence of registering the components
+  might potential causes issues.</p>
+
+  <div id="simple-form"></div>
 
 </div>
