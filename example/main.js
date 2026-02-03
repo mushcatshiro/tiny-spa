@@ -1,5 +1,6 @@
 import TinySpa from 'tiny-spa/router.js';
 import { HomeController } from './pages/home.js';
+import { QuiverController } from './pages/example-quiver.js'
 /*
 import { AboutController } from './pages/about.js';
 import { ContactController } from './pages/contact.js';
@@ -12,6 +13,7 @@ import { ExampleMdController } from './pages/example-md.js';
 const router = new TinySpa();
 
 router.registerRoute('/', './pages/home.html', HomeController);
+router.registerRoute('/quiver', './pages/example-quiver.html', QuiverController);
 // router.registerRoute('/about', './pages/about.html', AboutController);
 // router.registerRoute('/contact', './pages/contact.html', ContactController)
 // router.registerRoute('/example-table', './pages/example-table.html', ExampleTableController)
