@@ -20,10 +20,9 @@ class QuiverPlotComponent extends BaseComponent {
   constructor(data, cid, customCss) {
     super(cid, customCss)
     this.data = data
-    this.render();
   }
 
-  render() {
+  actualRender() {
     // cutomizable color bar scale
     const width = 500 // parameterize
     const height = 500
@@ -37,7 +36,8 @@ class QuiverPlotComponent extends BaseComponent {
       .attr("width", width)
       .attr("height", height)
 
-    const ctx = canvas.node().getContext("2d")
+    const canvasNode = canvas.node()
+    let ctx = canvasNode.getContext("2d")
 
     const xScale = d3.scaleLinear()
       .domain(d3.extent(this.data, d => d.x))
@@ -48,24 +48,26 @@ class QuiverPlotComponent extends BaseComponent {
       .range([height - 20, 20])
 
     let colorScale = d3.scaleDiverging(d3.interpolateViridis)
-      .domain([-1, 0, 1]) // parameterize
+      .domain([-2, 0, 2]) // parameterize
 
-    function draw(transform = d3.zoomIdentity) {
+    const draw = (transform = d3.zoomIdentity) => {
+      if (!ctx) return;
       ctx.save()
       ctx.clearRect(0, 0, width, height)
       ctx.translate(transform.x, transform.y)
       ctx.scale(transform.k, transform.k)
 
-      this.data.forEach(d => {
+
+      for (let i = 0; i < this.data.length; i++) {
+        const d = this.data[i]
         const xPos = xScale(d.x)
         const yPos = yScale(d.y)
         const length = 15 // parameterize
         const tx = xPos + Math.cos(d.a) * length
-        const ty = yPos + Math.sin(d.a) * length
-
-        ctx.beginPath()
+        const ty = yPos - Math.sin(d.a) * length
         ctx.strokeStyle = colorScale(d.m)
         ctx.lineWidth = 1.5 / transform.k
+        ctx.beginPath()
         ctx.moveTo(xPos, yPos)
         ctx.lineTo(tx, ty)
 
@@ -74,7 +76,7 @@ class QuiverPlotComponent extends BaseComponent {
         ctx.moveTo(tx, ty)
         ctx.lineTo(tx - headLen * Math.cos(d.a + Math.PI / 6), ty + headLen * Math.sin(d.a + Math.PI / 6))
         ctx.stroke()
-      })
+      }
       ctx.restore()
     }
 
@@ -85,23 +87,27 @@ class QuiverPlotComponent extends BaseComponent {
         draw(event.transform)
       })
     canvas.call(zoomBehavior)
+    this.getComponentContainer().append(container.node())
 
     const component = {
       node: container.node(),
       updateColors: (min, zero, max) => {
         colorScale.domain([min, zero, max])
-        draw(d3.zoomTransform(canvas.node()))
+        draw(d3.zoomTransform(canvasNode))
       },
       resetColors: () => {
         const maxVal = d3.max(this.data, d => Math.abs(d.m))
         colorScale.domain([-maxVal, 0, maxVal])
-        draw(d3.zoomTransform(canvas.node()))
+        draw(d3.zoomTransform(canvasNode))
       }
     }
     component.resetColors()
-
-    this.getComponentContainer().append(component.node)
     this.component = component
+  }
+
+  async onMount() {
+    super.onMount()
+    this.actualRender();
   }
 
   async onUnmount() {
@@ -109,6 +115,7 @@ class QuiverPlotComponent extends BaseComponent {
     if (this.component) {
       this.component.destroy()
       this.component = null
+      this.data = null
     }
   }
 }

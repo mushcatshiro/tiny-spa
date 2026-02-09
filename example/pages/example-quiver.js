@@ -5,7 +5,6 @@ import * as d3 from 'tiny-spa/frozen/d3.js'
 export class QuiverController extends BaseController {
   constructor(appId) {
     super(appId)
-    console.log("here")
     this.components.push(new QuiverPlotComponent(
       this.generateData(), "chart", ""
     ))
@@ -49,13 +48,12 @@ export class QuiverController extends BaseController {
     }
 
     // Return as an array of 6 arrays to match your processor input
-    console.log("returning")
     const result = []
     for (let i = 0; i < x.length; i++) {
         result[i] = {
             x: x[i], y: y[i], u: u[i], v: v[i],
-            mag: m ? m[i] : Math.sqrt(u[i]**2 + v[i]**2),
-            angle: a ? a[i] : Math.atan2(v[i], u[i])
+            m: m ? m[i] : Math.sqrt(u[i]**2 + v[i]**2),
+            a: a ? a[i] : Math.atan2(v[i], u[i])
         };
     }
     return result;
