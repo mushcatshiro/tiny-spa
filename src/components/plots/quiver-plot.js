@@ -11,44 +11,60 @@ import * as d3 from '../../frozen/d3.js'
   * @property { Array[number] } a
   */
 
+/**
+  * @typedef { Object } options
+  * @property { number } width
+  * @property { number } height
+  * @property { number } scaleRange
+  * @property { number } domainRange
+  * @property { number } domainCenter
+  */
+
 class QuiverPlotComponent extends BaseComponent {
   /**
     * @param { quiverData[] } data
+    * @param { options } options
     * @param { string } cid
     * @param { string } customCss
     */
-  constructor(data, cid, customCss) {
+  constructor(data, options, cid, customCss) {
     super(cid, customCss)
+    this.options = options
     this.data = data
   }
 
-  actualRender() {
-    // cutomizable color bar scale
-    const width = 500 // parameterize
-    const height = 500
+  // - [ ] cutomizable color bar scale, parameterize, black boundary box
+  aRender() {
+    const width = this.options.width
+    const height = this.options.height
+    const scaleRange = this.options.scaleRange
+    const domainRange = this.options.domainRange
+    const domainCenter = this.options.domainCenter
     const container = d3.create("div")
       .attr("class", "")
       .style("width", `${width}px`)
       .style("height", `${height}px`)
       .style("overflow", "hidden")
       .style("position", "relative")
+    const dpr = window.devicePixelRatio || 1
     const canvas = container.append("canvas")
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", width * dpr)
+      .attr("height", height * dpr)
 
     const canvasNode = canvas.node()
     let ctx = canvasNode.getContext("2d")
+    ctx.scale(dpr, dpr)
 
     const xScale = d3.scaleLinear()
       .domain(d3.extent(this.data, d => d.x))
-      .range([20, width - 20]) // parameterize
+      .range([scaleRange, width - scaleRange])
 
     const yScale = d3.scaleLinear()
       .domain(d3.extent(this.data, d => d.y))
-      .range([height - 20, 20])
+      .range([height - scaleRange, scaleRange])
 
     let colorScale = d3.scaleDiverging(d3.interpolateViridis)
-      .domain([-2, 0, 2]) // parameterize
+      .domain([-1 * domainRange, domainCenter, domainRange])
 
     const draw = (transform = d3.zoomIdentity) => {
       if (!ctx) return;
@@ -106,12 +122,12 @@ class QuiverPlotComponent extends BaseComponent {
   }
 
   async onMount() {
-    super.onMount()
-    this.actualRender();
+    await super.onMount()
+    this.aRender();
   }
 
   async onUnmount() {
-    super.onUnmount()
+    await super.onUnmount()
     if (this.component) {
       this.component.destroy()
       this.component = null
