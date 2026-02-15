@@ -1,19 +1,33 @@
 import { BaseController  } from 'tiny-spa/baseController.js'
 import { QuiverPlotComponent } from 'tiny-spa/components/plots/quiver-plot.js'
+import { ScatterPlotComponent } from 'tiny-spa/components/plots/scatter-plot.js'
 import * as d3 from 'tiny-spa/frozen/d3.js'
 
-export class QuiverController extends BaseController {
+export class VectorVizController extends BaseController {
   constructor(appId) {
     super(appId)
+    const qConfig = {
+      width: 500,
+      height: 500,
+      scaleRange: 20,
+      domainRange: 2,
+      domainCenter: 0,
+      margin: 30,
+    }
+    const data = this.generateData()
     this.components.push(new QuiverPlotComponent(
-      this.generateData(), "chart", ""
+      data, qConfig, "chart", ""
+    ))
+    this.components.push(new ScatterPlotComponent(
+      data, qConfig, "chart", ""
     ))
   }
 
   generateData() {
-    const n = 20; // Increase n for a denser field
+    const n = 20;
     const xl = d3.range(n).map(i => -1 + (2 * i) / (n - 1));
     const yl = d3.range(n).map(i => -1 + (2 * i) / (n - 1));
+    console.log(xl)
 
     // Initialize 6 flat arrays
     const x = [];
@@ -50,20 +64,21 @@ export class QuiverController extends BaseController {
     // Return as an array of 6 arrays to match your processor input
     const result = []
     for (let i = 0; i < x.length; i++) {
-        result[i] = {
-            x: x[i], y: y[i], u: u[i], v: v[i],
-            m: m ? m[i] : Math.sqrt(u[i]**2 + v[i]**2),
-            a: a ? a[i] : Math.atan2(v[i], u[i])
+      result[i] = {
+        x: x[i], y: y[i], u: u[i], v: v[i],
+        m: m ? m[i] : Math.sqrt(u[i]**2 + v[i]**2),
+        c: m ? m[i] : Math.sqrt(u[i]**2 + v[i]**2),
+        a: a ? a[i] : Math.atan2(v[i], u[i])
         };
     }
     return result;
   }
 
-  async onMount() {
-    super.onMount();
+  async onMount(signal) {
+    await super.onMount(signal);
   }
 
   async onUnmount() {
-    super.onUnmount()
+    await super.onUnmount()
   }
 }
