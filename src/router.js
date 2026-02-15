@@ -25,8 +25,16 @@ class TinySpa{
     this.currentController = null;
     this.appId = appId
     this.routingAbortController = null;
-    window.addEventListener('hashchange', () => this.handleRouteChange());
-    window.addEventListener('load', () => this.handleRouteChange());
+    window.addEventListener('hashchange', () => {
+      this.handleRouteChange().catch(err => {
+        this.renderError(err);
+      })
+    });
+    window.addEventListener('load', () => {
+      this.handleRouteChange().catch(err => {
+        this.renderError(err);
+      })
+    });
   }
 
   /**
@@ -75,12 +83,18 @@ class TinySpa{
       await this.loadPageStyles(routeObj.templateUrl);
       this.currentController = new routeObj.controller(this.appId);
       this.currentController.render()
-      await this.currentController.onMount()
+      try {
+        await this.currentController.onMount(signal)
+      } catch (err) {
+        if (signal.aborted) return;
+        this.renderError(err)
+      }
+
     } catch (err) {
       if (err.name === "AbortError") {
         return
       }
-      //console.log(err)
+      // console.log(err)
       this.renderError(err);
     }
   }
@@ -128,6 +142,7 @@ class TinySpa{
     /**
       * @type { SpaError }
       */
+    // console.log(err)
     const error = err instanceof SpaError
       ? err
       : new SpaError(err.message, 500);  // what's the err.message?

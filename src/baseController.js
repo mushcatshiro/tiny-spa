@@ -36,9 +36,20 @@ export class BaseController {
     return this
   }
 
-  async onMount() {
+  async onMount(signal) {
+    const errors = []
     for (const comp of this.components) {
-      await comp.onMount();
+      if (signal?.aborted) return;
+      try {
+        await comp.onMount()
+      }  catch(err) {
+        errors.push(err)
+      }
+    }
+    if (errors.length > 0 && !signal?.aborted) {
+      throw new AggregateError(
+        errors, "one or more components failed during onMount"
+      )
     }
   }
 
