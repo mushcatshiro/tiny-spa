@@ -14,6 +14,7 @@ import * as d3 from "../../frozen/d3.js";
   *
   * @typedef { baseOptions & Object } options
   * @property { number } margin
+  * @property { boolean } axes
   */
 
 export class ScatterPlotComponent extends BaseComponent {
@@ -60,27 +61,32 @@ export class ScatterPlotComponent extends BaseComponent {
       .style("height", "auto");
 
     // axes
-    svg.append("g")
-      .attr("transform", `translate(0,${height - margin})`)
-      .call(d3.axisBottom(x).ticks(width / 80))
-      .call(g => g.select(".domain").remove());
+    if (this.options.axes) {
+      // y(0) assumes data contains 0, geometric 0 through width / 2
+      const yOrigin = y(0)
+      svg.append("g")
+        .attr("transform", `translate(0,${yOrigin})`) // height - margin
+        .call(d3.axisBottom(x).ticks(width / 80))
+        .call(g => g.select(".domain").remove());
 
-    svg.append("g")
-      .attr("transform", `translate(${margin},0)`)
-      .call(d3.axisLeft(y).ticks(null, "+"))
-      .call(g => g.select(".domain").remove())
-      .call(g => g.selectAll(".tick line")
-        .clone()
-        .attr("x2", width - margin - margin)
-        .attr("stroke-opacity", d => d === 0 ? 1 : 0.1))
-      .call(g => g.append("text")
-        .attr("fill", "#000")
-        .attr("x", 5)
-        .attr("y", margin)
-        .attr("dy", "0.32em")
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .text("Anomaly (°C)"));
+      const xOrigin = x(0)
+      svg.append("g")
+        .attr("transform", `translate(${xOrigin},0)`)
+        .call(d3.axisLeft(y).ticks(null))
+        .call(g => g.select(".domain").remove())
+        //.call(g => g.selectAll(".tick line")
+        //  .clone()
+        //  .attr("x2", width - margin - margin)
+        //  .attr("stroke-opacity", d => d === 0 ? 1 : 0.1))
+        .call(g => g.append("text")
+          .attr("fill", "#000")
+          .attr("x", 0)
+          .attr("y", margin - 10)
+          .attr("dy", "0.32em")
+          .attr("text-anchor", "middle")
+          .attr("font-weight", "bold")
+          .text("Anomaly (°C)"));
+    }
 
     // scatter
     svg.append("g")
@@ -93,7 +99,6 @@ export class ScatterPlotComponent extends BaseComponent {
       .attr("cy", d => y(d.y))
       .attr("fill", d => color(d.c))
       .attr("r", 2.5);
-    console.log("finish render")
     this.component = svg
   }
 

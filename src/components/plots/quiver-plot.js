@@ -18,6 +18,8 @@ import * as d3 from '../../frozen/d3.js'
   * @property { number } scaleRange
   * @property { number } domainRange
   * @property { number } domainCenter
+  * @property { boolean } pivotMid
+  * @property { number } quiverLength
   */
 
 class QuiverPlotComponent extends BaseComponent {
@@ -78,13 +80,20 @@ class QuiverPlotComponent extends BaseComponent {
         const d = this.data[i]
         const xPos = xScale(d.x)
         const yPos = yScale(d.y)
-        const length = 15 // parameterize
+        var length = this.options.quiverLength
+        var sx = xPos
+        var sy = yPos
+        if (this.options.pivotMid) {
+          length /=  2
+          sx -= Math.cos(d.a) * length
+          sy += Math.sin(d.a) * length
+        }
         const tx = xPos + Math.cos(d.a) * length
         const ty = yPos - Math.sin(d.a) * length
         ctx.strokeStyle = colorScale(d.m)
         ctx.lineWidth = 1.5 / transform.k
         ctx.beginPath()
-        ctx.moveTo(xPos, yPos)
+        ctx.moveTo(sx, sy)
         ctx.lineTo(tx, ty)
 
         const headLen = 4
