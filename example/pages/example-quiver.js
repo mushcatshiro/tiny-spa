@@ -13,6 +13,8 @@ export class VectorVizController extends BaseController {
       domainRange: 2,
       domainCenter: 0,
       margin: 30,
+      pivotMid: true,
+      quiverLength: 15,
     }
     const data = this.generateData()
     this.components.push(new QuiverPlotComponent(
@@ -27,7 +29,6 @@ export class VectorVizController extends BaseController {
     const n = 20;
     const xl = d3.range(n).map(i => -1 + (2 * i) / (n - 1));
     const yl = d3.range(n).map(i => -1 + (2 * i) / (n - 1));
-    console.log(xl)
 
     // Initialize 6 flat arrays
     const x = [];
