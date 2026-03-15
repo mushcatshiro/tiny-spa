@@ -2,12 +2,32 @@ import { SpaError } from '../baseController.js'
 import { BaseComponent } from './baseComponent.js'
 
 /**
-  * @typedef { Object } formField
+  * @typedef { Object } option
+  * @property { string } value
+  * @property { string } displayValue
+  */
+
+/**
+  * @typedef { Object } baseField
   * @property { string } formType
   * @property { string } formName
   * @property { string } formLabel
   * @property { boolean } formRequired
   */
+
+/**
+  * @typedef {(
+  *  ( baseField & { formType: "text" } ) |
+  *  ( baseField & { formType: "number" } ) |
+  *  ( baseField & { formType: "datetime-local" } ) |
+  *  ( baseField & { formType: "select", options: Array<option> } ) |
+  *  ( baseField & { formType: "email", pattern?: string } ) |
+  *  ( baseField & { formType: "url", pattern?: string } ) |
+  *  ( baseField & { formType: "file", accept: string } ) |
+  *  ( baseField & { formType: "textarea" } ) |
+  *  ( baseField & { formType: "password" } )
+  * )} formField
+ */
 
 /**
   * @typedef { Object } submitBtnObj
@@ -26,6 +46,7 @@ import { BaseComponent } from './baseComponent.js'
   * @property { Array<formField> } fields
   * @property { submitBtnObj } submitButton
   * @property { apiObj } api
+  * @property { function } customSubmitFunc
   */
 
 /**
@@ -56,9 +77,9 @@ class FormComponent extends BaseComponent {
     */
   constructor(formConfig, cid, customCss) {
     super(cid, customCss)
+    this.customSubmitFunc = formConfig.customSubmitFunc
     this.config = formConfig;
     this.registerDefaultCss()
-    this.render();
   }
 
   registerDefaultCss() {
@@ -70,17 +91,12 @@ class FormComponent extends BaseComponent {
       display: block;
       margin-bottom: 0.5rem;
     }
-    textarea {
+    textarea, input, option, select {
       width: 100%;
       padding: 0.5rem;
       border-radius: 4px;
       border: 1px solid #ccc;
-    }
-    input {
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     button {
       padding: 0.75rem 1.5rem;
@@ -92,8 +108,7 @@ class FormComponent extends BaseComponent {
     }
     #form-status {
       margin-top: 1rem;
-    }
-    `
+    }`
   }
 
   /**
@@ -103,6 +118,7 @@ class FormComponent extends BaseComponent {
   generateHtml() {
     const fieldsHtml = this.config.fields.map(field => {
       const requiredAttr = field.formRequired ? 'required' : '';
+      const patternAttr = ('pattern' in field && field.pattern) ? `pattern="${field.pattern}"` : '';
       let fieldHtml = `<div class="form-field">
       <label for="${field.formName}">${field.formLabel}</label>`;
 
@@ -110,12 +126,28 @@ class FormComponent extends BaseComponent {
         case 'textarea':
           fieldHtml += `<textarea id="${field.formName}" name="${field.formName}" ${requiredAttr}></textarea>`;
           break;
+        case 'url':
         case 'email':
-        case 'text':
-        case 'password':
-        case 'number':
+          fieldHtml += `<input type="${field.formName}" id="${field.formName}" name="${field.formName}" ${patternAttr} ${requiredAttr} />`;
+          break
+        case 'file':
+          fieldHtml += `<input type="file" id="${field.formName}" name="${field.formName}" accept="${field.accept}" ${requiredAttr} />`;
+          break
+        case 'select':
+          fieldHtml += `<select id="${field.formName}" name="${field.formName}" ${requiredAttr}>`
+          for (const opt of field.options) {
+            fieldHtml += `<option value="${opt.value}">${opt.displayValue}</option>`
+          }
+          fieldHtml += `<select/>`
+          break
+        case 'datetime-local': // min max
+        case 'number': // min max
+        case 'text': // minlength maxlength
+        case 'password': // minlength
+          fieldHtml += `<input type="${field.formType}" id="${field.formName}" name="${field.formName}" ${requiredAttr} />`;
+          break
         default:
-          fieldHtml += `<input type="${field.formType}" id="${field.formName}" name="${field.formName}" ${requiredAttr}>`;
+          throw new SpaError(`Unexpected formField ${field}`)
           break;
       }
       fieldHtml += `</div>`;
@@ -132,7 +164,8 @@ class FormComponent extends BaseComponent {
       <div id="form-status"></div>`;
   }
 
-  render() {
+  async onMount() {
+    super.onMount();
     const targetElement = document.getElementById(this.config.targetElementId);
     if (!targetElement) {
       throw new SpaError(
@@ -140,18 +173,9 @@ class FormComponent extends BaseComponent {
       );
     }
 
-    targetElement.innerHTML = this.generateHtml();
-    this.attachEventListeners();
-  }
-
-  attachEventListeners(submitFunc=null) {
-    const form = document.getElementById(`${this.cid}-form`);
-    if (!form) throw new SpaError(`form with id ${this.cid}-form is not found`)
-    if (submitFunc) {
-      form.addEventListener('submit', (event) => submitFunc(event));
-      return
-    }
-    form.addEventListener('submit', (event) => this.handleSubmit(event));
+    this.getComponentContainer().insertAdjacentHTML('beforeend', this.generateHtml())
+    const fn = this.customSubmitFunc ? this.customSubmitFunc : this.handleSubmit
+    this.addListener(`${this.cid}-form`, 'submit', fn)
   }
 
   /**
