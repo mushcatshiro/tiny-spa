@@ -1,6 +1,6 @@
 // spa-framework/pages/contact.js
 import { BaseController } from 'tiny-spa/baseController.js'
-import { FormComponent } from 'tiny-spa/components/form.js';
+import { FormComponent, mockSubmitFunc } from 'tiny-spa/components/form.js';
 
 export class ContactController extends BaseController {
   constructor(appId) {
@@ -72,7 +72,7 @@ export class ContactController extends BaseController {
         endpoint: 'https://api.example.com/contact',
         method: 'POST'
       },
-      customSubmitFunc: null,
+      customSubmitFunc: mockSubmitFunc,
     };
 
     // Initialize the form component with the configuration.

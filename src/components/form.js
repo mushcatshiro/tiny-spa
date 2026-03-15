@@ -138,7 +138,7 @@ class FormComponent extends BaseComponent {
           for (const opt of field.options) {
             fieldHtml += `<option value="${opt.value}">${opt.displayValue}</option>`
           }
-          fieldHtml += `<select/>`
+          fieldHtml += `</select>`
           break
         case 'datetime-local': // min max
         case 'number': // min max
@@ -154,8 +154,9 @@ class FormComponent extends BaseComponent {
       return fieldHtml;
     }).join('');
 
+    // for=${this.config.api.endpoint} method="POST"
     return `
-      <form id="${this.cid}-form" for=${this.config.api.endpoint} method="POST">
+      <form id="${this.cid}-form">
       ${fieldsHtml}
       <button type="submit">
         ${this.config.submitButton.text}
@@ -175,7 +176,7 @@ class FormComponent extends BaseComponent {
 
     this.getComponentContainer().insertAdjacentHTML('beforeend', this.generateHtml())
     const fn = this.customSubmitFunc ? this.customSubmitFunc : this.handleSubmit
-    this.addListener(`${this.cid}-form`, 'submit', fn)
+    this.addListener(`#${this.cid}-form`, 'submit', fn)
   }
 
   /**
@@ -192,16 +193,12 @@ class FormComponent extends BaseComponent {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      // In a real app, you would uncomment this fetch call.
-      // For this demo, we will simulate the API call.
-      console.log('Submitting to:', this.config.api.endpoint);
-      console.log('With data:', data);
-
-      const response = await fetch(this.config.api.endpoint, {
-          method: this.config.api.method || 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-      });
+      const response = await this.safeFetch(
+          this.config.api.method,
+          this.config.api.endpoint,
+          JSON.stringify(data),
+          { 'Content-Type': 'application/json' },
+      );
 
       if (!response.ok) {
           throw new Error('Network response was not ok');

@@ -63,6 +63,12 @@ export class BaseComponent {
     return id;
   }
 
+  /**
+    * @param { string } method
+    * @param { string } url
+    * @param { Object } payload
+    * @param { Object } headers
+    */
   async safeFetch(method, url, payload, headers) {
     if (!this.abortController) {
       throw new Error("safeFetch must not be called before onMount")
