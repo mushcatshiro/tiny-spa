@@ -201,7 +201,7 @@ class FormComponent extends BaseComponent {
       );
 
       if (!response.ok) {
-          throw new Error('Network response was not ok');
+        throw new SpaError(`Error: ${response.text}`, response.code);
       }
 
       formStatus.textContent = 'Form submitted successfully!';
@@ -209,8 +209,7 @@ class FormComponent extends BaseComponent {
       event.target.reset();
 
     } catch (error) {
-      console.error('Form submission error:', error);
-      formStatus.textContent = 'Failed to submit form. Please try again.';
+      formStatus.textContent = `Failed to submit form: ${error.message}.`;
       formStatus.style.color = 'red';
     }
   }
